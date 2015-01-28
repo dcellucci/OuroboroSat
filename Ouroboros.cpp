@@ -42,6 +42,7 @@ Ouroboros::Ouroboros(){
 	debug_time   = 0;
 
 	charge_status = false;
+  start_talking = false;
 }
 
 void Ouroboros::init(){
@@ -72,13 +73,25 @@ void Ouroboros::heartbeat(){
     // Update system
     if(the_time - up_stat_time > up_stat_period){
         up_stat_time = the_time;
+        byte MSB;
+        byte LSB;
+        float tval;
         //Getting on-board battery voltage, and placing it within the packet framework
-        batteryMonitor.getVCellBytes(battery_voltage.bytes[0],battery_voltage.bytes[1]);
-        battery_voltage.value = batteryMonitor.VCellFromBytes(battery_voltage.bytes[0],battery_voltage.bytes[1]);
-   		//
-        batteryMonitor.getSoCBytes(battery_soc.bytes[0],battery_soc.bytes[1]);
-        battery_soc.value = batteryMonitor.SoCFromBytes(battery_soc.bytes[0],battery_soc.bytes[1]);
-        //batt_percent = batteryMonitor.getSoC();
+        batteryMonitor.getVCellBytes(MSB,LSB);
+        tval = batteryMonitor.VCellFromBytes(MSB,LSB);
+
+        battery_voltage.bytes[0] = MSB;
+        battery_voltage.bytes[1] = LSB;
+        battery_voltage.value = tval;
+
+
+        batteryMonitor.getSoCBytes(MSB,LSB);
+        tval = batteryMonitor.SoCFromBytes(MSB,LSB);
+
+        battery_soc.bytes[0] = MSB;
+        battery_soc.bytes[1] = LSB;
+        battery_soc.value = tval;
+
     }
 
     //if(the_time - route_time > route_period){
@@ -91,6 +104,9 @@ void Ouroboros::heartbeat(){
 
     digitalWrite(charge_pin, !charge_status);
     clean_ports();
+
+    if(the_time > talk_delay && !start_talking)
+      start_talking = true;
 }
 
 void Ouroboros::clean_ports(){
@@ -103,6 +119,11 @@ void Ouroboros::clean_ports(){
 	if(port_3.path_in_length==0 and port_3.payload_in_length!=0)
 		port_3.payload_in_length = 0;
 
+}
+
+void Ouroboros::clear_port_output(struct apa_port_type *port){
+  port->path_out_length = 0;
+  port->payload_out_length = 0;
 }
 
 boolean Ouroboros::send_status(struct apa_port_type *port){
@@ -124,7 +145,7 @@ boolean Ouroboros::send_status(struct apa_port_type *port){
       	    port->payload_out[1] = 'v';
       	    port->payload_out[2] = char(battery_voltage.bytes[0]);
       	    port->payload_out[3] = char(battery_voltage.bytes[1]);
-      	    Serial.print(battery_voltage.value,3);
+      	    Serial.print(batteryMonitor.VCellFromBytes(battery_voltage.bytes[0],battery_voltage.bytes[1]),3);
       	    payload_length = 4;
       	    break;          
       	}
@@ -142,6 +163,20 @@ boolean Ouroboros::send_status(struct apa_port_type *port){
     }
     port->payload_out_length = payload_length;
     return success;
+}
+
+void Ouroboros::send_packet(String path, String payload, struct apa_port_type *port){
+  ///*
+  port->path_out_length = path.length()+1;
+  port->path_out[0]='^';
+  for(int i = 0; i < path.length(); i++){
+    port->path_out[i+1]=path[i];
+  }
+  port->payload_out_length = payload.length();
+  for(int i = 0; i < payload.length(); i++){
+    port->payload_out[i]=payload[i];
+  }
+  //*/
 }
 
 void Ouroboros::toggle_charge_status(struct apa_port_type *port){

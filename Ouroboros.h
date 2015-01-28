@@ -14,6 +14,10 @@
 #define route_period   1   //route the packets
 #define debug_period   1000
 
+//We want to give all of the boards time to boot up and begin listening
+//before we begin talking
+#define talk_delay 3000
+
 #define apa_N_in A0
 #define apa_N_out A1
 #define apa_S_in A2
@@ -36,6 +40,8 @@ class Ouroboros{
 		void init();
 		void heartbeat();
 		void toggle_charge_status(struct apa_port_type *port);
+		void send_packet(String path, String payload, struct apa_port_type *port);
+		void clear_port_output(struct apa_port_type *port);
 		boolean send_status(struct apa_port_type *port);
 		//
 		//accessors
@@ -58,11 +64,12 @@ class Ouroboros{
 		long route_time;
 		long debug_time;
 
-
 		float batt_voltage, batt_percent;
 
 		//sets the MOSFET that does the charging
 		boolean charge_status;
+		//indicates if it is time to start talking
+		boolean start_talking; 
 	private:
 		void clean_ports();
 
