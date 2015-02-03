@@ -9,8 +9,10 @@ The Ouroboros board can do alot of things.
   1. It behaves like an Arduino, so it can run Arduino code and libraries
   2. It has the circuitry required to charge an on-board LiPo battery from a solar panel
   3. It can connect to a maximum of four neighbors, and talks to these four neighbors using a protocol called the Asynchronous Packet Automaton (which you can learn more about here).
-  4. It can also use this connection to charge a neighbor's battery using its on-board battery, for which there are plenty of reas
+  4. It can also use this connection to charge a neighbor's battery using its on-board battery, for which there are plenty of reasons, detailed in a forthcoming paper. 
 
-This library provides this basic functionality as an API. 
+This library provides this basic functionality as an API, as well as the framework so that you can build and add your own extensions. 
+
+Ouroboros is alot like the Iron Man suit- it's the foundation upon which a more complex and specialized iterations can be built.
 
 ##Using this library

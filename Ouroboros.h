@@ -1,5 +1,7 @@
 #include "apa.h"
 #include "MAX17043.h" //See https://github.com/dcellucci/ArduinoLib_MAX17043 for more details
+#include "Arduino.h"
+#include "Wire.h" //I2C communication library 
 //#include <avr/wdt.h>
 
 #ifndef _OUROBOROS_H
@@ -26,8 +28,9 @@
 #define apa_W_out 3
 
 //Data Packet Specification:
-union packet{
-    byte bytes[2];
+struct packet{
+    byte MSB;
+    byte LSB;
     float value;
 };
 
@@ -42,14 +45,15 @@ class Ouroboros{
 		void toggle_charge_status(struct apa_port_type *port);
 		void send_packet(String path, String payload, struct apa_port_type *port);
 		void clear_port_output(struct apa_port_type *port);
-		boolean send_status(struct apa_port_type *port);
+		void send_status(struct apa_port_type *port);
+		void process_packet(struct apa_port_type *port);
 		//
 		//accessors
 		//
 		MAX17043 getBattMonitor();
 
 	protected:
-		packet battery_voltage, battery_soc;
+		struct packet v_batt, soc_batt;
 		//Each Ouroboros Board has four virtual APA ports
 		struct apa_port_type port_0, port_1, port_2, port_3;
 		// as well as an IC for sensing the battery Voltage/Current
@@ -63,8 +67,6 @@ class Ouroboros{
 		long up_stat_time;
 		long route_time;
 		long debug_time;
-
-		float batt_voltage, batt_percent;
 
 		//sets the MOSFET that does the charging
 		boolean charge_status;

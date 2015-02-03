@@ -1,5 +1,4 @@
 #include "Ouroboros.h"
-#include "Arduino.h"
 
 Ouroboros::Ouroboros(){
 	port_0.id = '0';
@@ -46,18 +45,19 @@ Ouroboros::Ouroboros(){
 }
 
 void Ouroboros::init(){
-	pinMode(charge_pin,OUTPUT);
+    //We talk to the LiPo monitor using I2C
+    Wire.begin();
+
+	  pinMode(charge_pin,OUTPUT);
 
     pinMode(apa_W_in, INPUT);
     pinMode(apa_W_out,OUTPUT);
-	pinMode(apa_N_in, INPUT);
+	  pinMode(apa_N_in, INPUT);
     pinMode(apa_N_out,OUTPUT);
     pinMode(apa_S_in, INPUT);
     pinMode(apa_S_out,OUTPUT);
 	
-	//wdt_enable(WDTO_2S);
-
-	digitalWrite(charge_pin,HIGH);
+	  digitalWrite(charge_pin,HIGH);
 
     digitalWrite(apa_W_out,LOW);
     digitalWrite(apa_N_out,LOW);
@@ -65,6 +65,8 @@ void Ouroboros::init(){
 
     batteryMonitor.reset();
     batteryMonitor.quickStart();
+
+    power_on_delay(); //Healthy delay (as specified by APA)
 }
 
 void Ouroboros::heartbeat(){
@@ -73,24 +75,17 @@ void Ouroboros::heartbeat(){
     // Update system
     if(the_time - up_stat_time > up_stat_period){
         up_stat_time = the_time;
-        byte MSB;
-        byte LSB;
-        float tval;
+        Serial.println("Hi.");
         //Getting on-board battery voltage, and placing it within the packet framework
-        batteryMonitor.getVCellBytes(MSB,LSB);
-        tval = batteryMonitor.VCellFromBytes(MSB,LSB);
+        batteryMonitor.getVCellBytes(v_batt.MSB,v_batt.LSB);
+        v_batt.value  = batteryMonitor.VCellFromBytes(v_batt.MSB,v_batt.LSB);
 
-        battery_voltage.bytes[0] = MSB;
-        battery_voltage.bytes[1] = LSB;
-        battery_voltage.value = tval;
+        //batteryMonitor.getSoCBytes(MSB,LSB);
+        //tval = batteryMonitor.SoCFromBytes(MSB,LSB);
 
-
-        batteryMonitor.getSoCBytes(MSB,LSB);
-        tval = batteryMonitor.SoCFromBytes(MSB,LSB);
-
-        battery_soc.bytes[0] = MSB;
-        battery_soc.bytes[1] = LSB;
-        battery_soc.value = tval;
+        //soc_batt.bytes[0] = MSB;
+        //soc_batt.bytes[1] = LSB;
+        //soc_batt.value = tval;
 
     }
 
@@ -126,43 +121,46 @@ void Ouroboros::clear_port_output(struct apa_port_type *port){
   port->payload_out_length = 0;
 }
 
-boolean Ouroboros::send_status(struct apa_port_type *port){
-	int payload_length = 2;
+void Ouroboros::process_packet(struct apa_port_type *port){
+  switch(port->payload_out[0]){
+    case 's':{
+      send_status(port);
+      break;
+    }
+    case 'c':{
+      toggle_charge_status(port);
+      break;
+    }
+  }
+}
+
+void Ouroboros::send_status(struct apa_port_type *port){
+	int payload_length = 4;
 	boolean success = true;
+  port->payload_out[0] = 'u';
     switch(port->payload_out[1]){
       	case 'c':{
-      	    port->payload_out[0] = 'u';
-      	    port->payload_out[1] = 'c';
       	    char charge_stat = '-';
       	    if(charge_status)        
       	        charge_stat = '+';  
       	    port->payload_out[2] = charge_stat;
-      	    payload_length++;
+      	    payload_length = 3;
       	    break;
       	}
       	case 'v':{
-      	    port->payload_out[0] = 'u';
-      	    port->payload_out[1] = 'v';
-      	    port->payload_out[2] = char(battery_voltage.bytes[0]);
-      	    port->payload_out[3] = char(battery_voltage.bytes[1]);
-      	    Serial.print(batteryMonitor.VCellFromBytes(battery_voltage.bytes[0],battery_voltage.bytes[1]),3);
-      	    payload_length = 4;
+      	    port->payload_out[2] = char(v_batt.MSB);
+      	    port->payload_out[3] = char(v_batt.LSB);
+      	    //Serial.print(batteryMonitor.VCellFromBytes(v_batt.MSB,v_batt.LSB),3);
       	    break;          
       	}
       	case 'p':{
-      	    port->payload_out[0] = 'u';
-      	    port->payload_out[1] = 'p';
-      	    port->payload_out[2] = char(battery_soc.bytes[0]);
-      	    port->payload_out[3] = char(battery_soc.bytes[1]);
-      	    Serial.print(battery_soc.value,2);
-      	    payload_length = 4;
+      	    port->payload_out[2] = char(soc_batt.MSB);
+      	    port->payload_out[3] = char(soc_batt.LSB);
+      	    //Serial.print(soc_batt.value,2);
       	    break;  
       	}
-      	default :
-      		success = false;
     }
     port->payload_out_length = payload_length;
-    return success;
 }
 
 void Ouroboros::send_packet(String path, String payload, struct apa_port_type *port){
