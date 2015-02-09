@@ -1,7 +1,7 @@
 #include "apa.h"
 #include "MAX17043.h" //See https://github.com/dcellucci/ArduinoLib_MAX17043 for more details
 #include "Arduino.h"
-#include "Wire.h" //I2C communication library 
+#include "I2C.h" //I2C communication library 
 //#include <avr/wdt.h>
 
 #ifndef _OUROBOROS_H
@@ -15,10 +15,13 @@
 #define up_stat_period 1000 //update the variables containing the
 #define route_period   1   //route the packets
 #define debug_period   1000
+#define gauge_update_period 100
 
 //We want to give all of the boards time to boot up and begin listening
 //before we begin talking
 #define talk_delay 3000
+
+#define I2C_Timeout 1000
 
 #define apa_N_in A0
 #define apa_N_out A1
@@ -46,13 +49,14 @@ class Ouroboros{
 		void send_packet(String path, String payload, struct apa_port_type *port);
 		void clear_port_output(struct apa_port_type *port);
 		void send_status(struct apa_port_type *port);
-		void process_packet(struct apa_port_type *port);
+		boolean process_packet(struct apa_port_type *port);
 		//
 		//accessors
 		//
 		MAX17043 getBattMonitor();
 
 	protected:
+		int error_code;
 		struct packet v_batt, soc_batt;
 		//Each Ouroboros Board has four virtual APA ports
 		struct apa_port_type port_0, port_1, port_2, port_3;
@@ -67,11 +71,13 @@ class Ouroboros{
 		long up_stat_time;
 		long route_time;
 		long debug_time;
+		long gauge_update_time;
 
 		//sets the MOSFET that does the charging
 		boolean charge_status;
 		//indicates if it is time to start talking
 		boolean start_talking; 
+		boolean lipo_gauge_working;
 	private:
 		void clean_ports();
 

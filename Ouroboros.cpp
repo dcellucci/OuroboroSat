@@ -1,6 +1,7 @@
 #include "Ouroboros.h"
 
 Ouroboros::Ouroboros(){
+  //Port_0 is the debug port, for things like Serial Communication
 	port_0.id = '0';
 	port_0.path_in_length = 0;
 	port_0.path_out_length = 0;
@@ -11,30 +12,30 @@ Ouroboros::Ouroboros(){
 	port_1.path_out_length = 0;
 	port_1.next_port = &port_2;
 	port_1.pins_in = portInputRegister(digitalPinToPort(apa_W_in));
-    port_1.pin_in = digitalPinToBitMask(apa_W_in);
-    port_1.port_out = portOutputRegister(digitalPinToPort(apa_W_out));
-    port_1.direction_out = portModeRegister(digitalPinToPort(apa_W_out));
-    port_1.pin_out = digitalPinToBitMask(apa_W_out);
+  port_1.pin_in = digitalPinToBitMask(apa_W_in);
+  port_1.port_out = portOutputRegister(digitalPinToPort(apa_W_out));
+  port_1.direction_out = portModeRegister(digitalPinToPort(apa_W_out));
+  port_1.pin_out = digitalPinToBitMask(apa_W_out);
 	
 	port_2.id = '2';
 	port_2.path_in_length = 0;
 	port_2.path_out_length = 0;
 	port_2.next_port = &port_3;
 	port_2.pins_in = portInputRegister(digitalPinToPort(apa_N_in));
-    port_2.pin_in = digitalPinToBitMask(apa_N_in);
-    port_2.port_out = portOutputRegister(digitalPinToPort(apa_N_out));
-    port_2.direction_out = portModeRegister(digitalPinToPort(apa_N_out));
-    port_2.pin_out = digitalPinToBitMask(apa_N_out);
+  port_2.pin_in = digitalPinToBitMask(apa_N_in);
+  port_2.port_out = portOutputRegister(digitalPinToPort(apa_N_out));
+  port_2.direction_out = portModeRegister(digitalPinToPort(apa_N_out));
+  port_2.pin_out = digitalPinToBitMask(apa_N_out);
 	
 	port_3.id = '3';
 	port_3.path_in_length = 0;
 	port_3.path_out_length = 0;
 	port_3.next_port = &port_0;
 	port_3.pins_in = portInputRegister(digitalPinToPort(apa_S_in));
-    port_3.pin_in = digitalPinToBitMask(apa_S_in);
-    port_3.port_out = portOutputRegister(digitalPinToPort(apa_S_out));
-    port_3.direction_out = portModeRegister(digitalPinToPort(apa_S_out));
-    port_3.pin_out = digitalPinToBitMask(apa_S_out);
+  port_3.pin_in = digitalPinToBitMask(apa_S_in);
+  port_3.port_out = portOutputRegister(digitalPinToPort(apa_S_out));
+  port_3.direction_out = portModeRegister(digitalPinToPort(apa_S_out));
+  port_3.pin_out = digitalPinToBitMask(apa_S_out);
 
 	up_stat_time = 0;
 	route_time   = 0;
@@ -42,12 +43,13 @@ Ouroboros::Ouroboros(){
 
 	charge_status = false;
   start_talking = false;
+  lipo_gauge_working = true;
 }
 
 void Ouroboros::init(){
     //We talk to the LiPo monitor using I2C
-    Wire.begin();
-
+    I2c.begin();
+    I2c.timeOut(I2C_Timeout);
 	  pinMode(charge_pin,OUTPUT);
 
     pinMode(apa_W_in, INPUT);
@@ -63,30 +65,53 @@ void Ouroboros::init(){
     digitalWrite(apa_N_out,LOW);
     digitalWrite(apa_S_out,LOW);
 
-    batteryMonitor.reset();
-    batteryMonitor.quickStart();
+
+    error_code = batteryMonitor.reset();
+    
+    if(error_code == 0)
+      error_code = batteryMonitor.quickStart();
+    
+    if(error_code != 0){
+      v_batt.MSB = 0xFE;
+      v_batt.LSB = error_code;
+      lipo_gauge_working = false;
+    }
+    else
+      lipo_gauge_working = true;
 
     power_on_delay(); //Healthy delay (as specified by APA)
 }
 
 void Ouroboros::heartbeat(){
-	//wdt_reset();
 	the_time = millis();
     // Update system
+    if(!lipo_gauge_working && the_time - gauge_update_time > gauge_update_period){
+      error_code = batteryMonitor.reset();
+      
+      if(error_code == 0)
+        error_code = batteryMonitor.quickStart();
+      
+      if(error_code != 0){
+        v_batt.MSB = 0xFE;
+        v_batt.LSB = error_code;
+        lipo_gauge_working = false;
+      }
+      else
+        lipo_gauge_working = true;
+
+    }
+
+
     if(the_time - up_stat_time > up_stat_period){
         up_stat_time = the_time;
-        Serial.println("Hi.");
         //Getting on-board battery voltage, and placing it within the packet framework
-        batteryMonitor.getVCellBytes(v_batt.MSB,v_batt.LSB);
+        error_code = batteryMonitor.getVCellBytes(v_batt.MSB,v_batt.LSB);
+        if(error_code != 0){
+          v_batt.MSB = 0xFE;
+          v_batt.LSB = error_code;
+          lipo_gauge_working = false;
+        }
         v_batt.value  = batteryMonitor.VCellFromBytes(v_batt.MSB,v_batt.LSB);
-
-        //batteryMonitor.getSoCBytes(MSB,LSB);
-        //tval = batteryMonitor.SoCFromBytes(MSB,LSB);
-
-        //soc_batt.bytes[0] = MSB;
-        //soc_batt.bytes[1] = LSB;
-        //soc_batt.value = tval;
-
     }
 
     //if(the_time - route_time > route_period){
@@ -121,7 +146,8 @@ void Ouroboros::clear_port_output(struct apa_port_type *port){
   port->payload_out_length = 0;
 }
 
-void Ouroboros::process_packet(struct apa_port_type *port){
+boolean Ouroboros::process_packet(struct apa_port_type *port){
+  boolean processed = true;
   switch(port->payload_out[0]){
     case 's':{
       send_status(port);
@@ -131,7 +157,11 @@ void Ouroboros::process_packet(struct apa_port_type *port){
       toggle_charge_status(port);
       break;
     }
+    default:{
+      processed = false;
+    }
   }
+  return processed;
 }
 
 void Ouroboros::send_status(struct apa_port_type *port){
@@ -150,13 +180,11 @@ void Ouroboros::send_status(struct apa_port_type *port){
       	case 'v':{
       	    port->payload_out[2] = char(v_batt.MSB);
       	    port->payload_out[3] = char(v_batt.LSB);
-      	    //Serial.print(batteryMonitor.VCellFromBytes(v_batt.MSB,v_batt.LSB),3);
       	    break;          
       	}
       	case 'p':{
       	    port->payload_out[2] = char(soc_batt.MSB);
       	    port->payload_out[3] = char(soc_batt.LSB);
-      	    //Serial.print(soc_batt.value,2);
       	    break;  
       	}
     }
@@ -185,6 +213,7 @@ void Ouroboros::toggle_charge_status(struct apa_port_type *port){
     port->payload_out[0]=charge_stat;
     port->payload_out_length=1;
 }
+
 
 
 
