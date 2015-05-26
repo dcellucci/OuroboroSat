@@ -66,18 +66,7 @@ void Ouroboros::init(){
     digitalWrite(apa_S_out,LOW);
 
 
-    error_code = batteryMonitor.reset();
-    
-    if(error_code == 0)
-      error_code = batteryMonitor.quickStart();
-    
-    if(error_code != 0){
-      v_batt.MSB = 0xFE;
-      v_batt.LSB = error_code;
-      lipo_gauge_working = false;
-    }
-    else
-      lipo_gauge_working = true;
+    restart_battery_monitor();
 
     power_on_delay(); //Healthy delay (as specified by APA)
 }
@@ -86,20 +75,10 @@ void Ouroboros::heartbeat(){
 	the_time = millis();
     // Update system
     if(!lipo_gauge_working && the_time - gauge_update_time > gauge_update_period){
-      error_code = batteryMonitor.reset();
-      
-      if(error_code == 0)
-        error_code = batteryMonitor.quickStart();
-      
-      if(error_code != 0){
-        v_batt.MSB = 0xFE;
-        v_batt.LSB = error_code;
-        lipo_gauge_working = false;
-      }
-      else
-        lipo_gauge_working = true;
-
+      gauge_update_time=the_time;
+      restart_battery_monitor();
     }
+
 
 
     if(the_time - up_stat_time > up_stat_period){
@@ -112,6 +91,16 @@ void Ouroboros::heartbeat(){
           lipo_gauge_working = false;
         }
         v_batt.value  = batteryMonitor.VCellFromBytes(v_batt.MSB,v_batt.LSB);
+
+        if(error_code == 0){
+          error_code = batteryMonitor.getSoCBytes(soc_batt.MSB,soc_batt.LSB);
+          if(error_code != 0){
+            soc_batt.MSB = 0xFE;
+            soc_batt.LSB = error_code;
+            lipo_gauge_working = false;
+          }
+          soc_batt.value  = batteryMonitor.SoCFromBytes(soc_batt.MSB,soc_batt.LSB);
+        }
     }
 
     //if(the_time - route_time > route_period){
@@ -123,10 +112,12 @@ void Ouroboros::heartbeat(){
     //}
 
     digitalWrite(charge_pin, !charge_status);
-    clean_ports();
+    //clean_ports();
 
     if(the_time > talk_delay && !start_talking)
       start_talking = true;
+
+
 }
 
 void Ouroboros::clean_ports(){
@@ -139,11 +130,36 @@ void Ouroboros::clean_ports(){
 	if(port_3.path_in_length==0 and port_3.payload_in_length!=0)
 		port_3.payload_in_length = 0;
 
+  if(port_0.path_out_length==0 and port_0.payload_out_length!=0)
+    port_0.payload_out_length = 0;
+  if(port_1.path_out_length==0 and port_1.payload_out_length!=0)
+    port_1.payload_out_length = 0;
+  if(port_2.path_out_length==0 and port_2.payload_out_length!=0)
+    port_2.payload_out_length = 0;
+  if(port_3.path_out_length==0 and port_3.payload_out_length!=0)
+    port_3.payload_out_length = 0;
+
 }
 
 void Ouroboros::clear_port_output(struct apa_port_type *port){
   port->path_out_length = 0;
   port->payload_out_length = 0;
+}
+
+int Ouroboros::restart_battery_monitor(){
+  int err_code = batteryMonitor.reset();
+    
+    if(err_code == 0)
+      err_code = batteryMonitor.quickStart();
+    
+    if(err_code != 0){
+      v_batt.MSB = 0xEE;
+      v_batt.LSB = err_code;
+      lipo_gauge_working = false;
+    }
+    else
+      lipo_gauge_working = true;
+  return err_code;
 }
 
 boolean Ouroboros::process_packet(struct apa_port_type *port){
@@ -154,7 +170,10 @@ boolean Ouroboros::process_packet(struct apa_port_type *port){
       break;
     }
     case 'c':{
-      toggle_charge_status(port);
+      boolean tmp_stat = false;
+      if(port->payload_out[1]=='+')
+        tmp_stat = true;
+      set_charge_status(tmp_stat,port);
       break;
     }
     default:{
@@ -194,7 +213,7 @@ void Ouroboros::send_status(struct apa_port_type *port){
 void Ouroboros::send_packet(String path, String payload, struct apa_port_type *port){
   ///*
   port->path_out_length = path.length()+1;
-  port->path_out[0]='^';
+  port->path_out[0]=apa_pointer;
   for(int i = 0; i < path.length(); i++){
     port->path_out[i+1]=path[i];
   }
@@ -205,13 +224,17 @@ void Ouroboros::send_packet(String path, String payload, struct apa_port_type *p
   //*/
 }
 
-void Ouroboros::toggle_charge_status(struct apa_port_type *port){
-    charge_status = !charge_status;
+void Ouroboros::set_charge_status(boolean des_status, struct apa_port_type *port){
+    charge_status = des_status;
     char charge_stat = '-';
     if(charge_status)        
         charge_stat = '+';
-    port->payload_out[0]=charge_stat;
-    port->payload_out_length=1;
+    else
+        restart_battery_monitor();
+    port->payload_out[0]='u';
+    port->payload_out[1]='c';
+    port->payload_out[2]=charge_stat;
+    port->payload_out_length=3;
 }
 
 

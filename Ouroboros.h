@@ -13,7 +13,7 @@
 
 //length of update time, in milliseconds
 #define up_stat_period 1000 //update the variables containing the
-#define route_period   1   //route the packets
+#define route_period   5   //route the packets
 #define debug_period   1000
 #define gauge_update_period 100
 
@@ -21,7 +21,7 @@
 //before we begin talking
 #define talk_delay 3000
 
-#define I2C_Timeout 1000
+#define I2C_Timeout 10
 
 #define apa_N_in A0
 #define apa_N_out A1
@@ -45,15 +45,17 @@ class Ouroboros{
 
 		void init();
 		void heartbeat();
-		void toggle_charge_status(struct apa_port_type *port);
+		void set_charge_status(boolean des_status, struct apa_port_type *port);
 		void send_packet(String path, String payload, struct apa_port_type *port);
 		void clear_port_output(struct apa_port_type *port);
 		void send_status(struct apa_port_type *port);
 		boolean process_packet(struct apa_port_type *port);
+		int restart_battery_monitor();
 		//
 		//accessors
 		//
 		MAX17043 getBattMonitor();
+		void clean_ports();
 
 	protected:
 		int error_code;
@@ -78,8 +80,6 @@ class Ouroboros{
 		//indicates if it is time to start talking
 		boolean start_talking; 
 		boolean lipo_gauge_working;
-	private:
-		void clean_ports();
 
 };
 
