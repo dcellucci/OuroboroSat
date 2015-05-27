@@ -19,6 +19,9 @@ Ouroboros is supposed to be alot like the Iron Man suit- it's the foundation upo
 ##Using this library
 The base Ouroboros Board is a class that you extend. In the examples I have a blank version that allows you to write an arduino sketch that extends the existing Ouroboros framework. 
 
+##Getting Started
+There are plenty of ways to get started. Probably the first and best way is to make your own prototype on a breadboard, which is detailed inside the `boards/breadboard` folder. That way you can practice with the wiring and the code, as well as test what you'll need to add to the existing Ouroboros board in order to get it working with your project. 
+
 ##License
 
 <a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-sa/4.0/88x31.png" /></a><br />This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/">Creative Commons Attribution-ShareAlike 4.0 International License</a>.
