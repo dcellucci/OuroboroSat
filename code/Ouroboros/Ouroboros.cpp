@@ -130,6 +130,8 @@ void Ouroboros::heartbeat(){
 }
 
 void Ouroboros::clean_ports(){
+  //Sometimes, there's junk in the ports.
+  //This cleans them up!
 	if(port_0.path_in_length==0 and port_0.payload_in_length!=0)
 		port_0.payload_in_length = 0;
 	if(port_1.path_in_length==0 and port_1.payload_in_length!=0)

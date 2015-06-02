@@ -50,6 +50,7 @@ class Ouroboros{
 		void clear_port_output(struct apa_port_type *port);
 		void send_status(struct apa_port_type *port);
 		boolean process_packet(struct apa_port_type *port);
+		
 		//
 		//accessors
 		//
