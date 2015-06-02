@@ -1,0 +1,34 @@
+
+menu.cpu=Processor
+
+##############################################################
+ouroboros.name=Ouroboros Satellite Board
+
+ouroboros.upload.tool=avrdude
+ouroboros.upload.protocol=arduino
+
+ouroboros.bootloader.tool=avrdude
+ouroboros.bootloader.unlock_bits=0x3F
+ouroboros.bootloader.lock_bits=0x0F
+
+ouroboros.build.board=AVR_PRO
+ouroboros.build.core=arduino
+ouroboros.build.variant=eightanaloginputs
+
+## Ouroboros Revision 3
+## ATmega328 @ 3.3V, 8 MHz
+## --------------------------------------------------
+ouroboros.menu.cpu.8MHzatmega328=Rev. 3 [ATmega328 (3.3V, 8 MHz)]
+
+ouroboros.menu.cpu.8MHzatmega328.upload.maximum_size=30720
+ouroboros.menu.cpu.8MHzatmega328.upload.maximum_data_size=2048
+ouroboros.menu.cpu.8MHzatmega328.upload.speed=57600
+
+ouroboros.menu.cpu.8MHzatmega328.bootloader.low_fuses=0xFF
+ouroboros.menu.cpu.8MHzatmega328.bootloader.high_fuses=0xDA
+ouroboros.menu.cpu.8MHzatmega328.bootloader.extended_fuses=0x05
+ouroboros.menu.cpu.8MHzatmega328.bootloader.file=atmega/ATmegaBOOT_168_atmega328_pro_8MHz.hex
+
+ouroboros.menu.cpu.8MHzatmega328.build.mcu=atmega328p
+ouroboros.menu.cpu.8MHzatmega328.build.f_cpu=8000000L
+
