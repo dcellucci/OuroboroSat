@@ -14,10 +14,11 @@ The Ouroboros board (v. 1.0) can do alot of things.
   3. It can connect to a maximum of four neighbors, and can talk to these four neighbors using a protocol called the Asynchronous Packet Automaton (which you can learn more about [here](https://github.com/dcellucci/APA_Tutorial)).
   4. It can also use this connection to charge a neighbor's battery using its own on-board battery, for which there are plenty of reasons, detailed in a forthcoming paper. 
 
-Ouroboros is supposed to be alot like the Iron Man suit- it's the foundation upon which a more complex and specialized iterations can be built. My goal is to make the process of extending both the hardware and the software is as easy and transparent as possible.
+Ouroboros is supposed to be alot like the Iron Man suit- it's the foundation upon which a more complex and specialized iterations can be built. My goal is to make the process of extending both the hardware and the software as easy and transparent as possible.
 
 ##Using this library
-The base Ouroboros Board is a class that you extend. In the examples I have a blank version that allows you to write an arduino sketch that extends the existing Ouroboros framework. 
+
+You'll first want to install the Ouroboros library and hardware board specification. To install the software, simply copy the contents of `code/libraries` folder to the `libraries` directory of your Arduino sketchbook (you might have to make it). To install the board spec, copy the contents of `code/hardware` to the `hardware` directory of the sketchbook (you might thave to make that directory as well).
 
 ##Getting Started
 There are plenty of ways to get started. Probably the first and best way is to make your own prototype on a breadboard, which is detailed inside the `boards/breadboard` folder. That way you can practice with the wiring and the code, as well as test what you'll need to add to the existing Ouroboros board in order to get it working with your project. 
