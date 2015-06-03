@@ -1,2 +1,0 @@
-* Add documentation on defines, general architecture
-* start API
