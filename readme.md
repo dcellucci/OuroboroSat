@@ -10,18 +10,26 @@ Ouroboros is the modular satellite platform that combines communication, power-s
 The Ouroboros board (v. 1.0) can do alot of things. 
 
   1. It behaves like an Arduino, so it can run Arduino code and libraries
-  2. It has the circuitry required to charge an on-board LiPo battery from a solar panel
+  2. It has the ability to charge an on-board LiPo battery from a solar panel
   3. It can connect to a maximum of four neighbors, and can talk to these four neighbors using a protocol called the Asynchronous Packet Automaton (which you can learn more about [here](https://github.com/dcellucci/APA_Tutorial)).
   4. It can also use this connection to charge a neighbor's battery using its own on-board battery, for which there are plenty of reasons, detailed in a forthcoming paper. 
 
 Ouroboros is supposed to be alot like the Iron Man suit- it's the foundation upon which a more complex and specialized iterations can be built. My goal is to make the process of extending both the hardware and the software as easy and transparent as possible.
 
-##Using this library
+##Installation
 
-You'll first want to install the Ouroboros library and hardware board specification. To install the software, simply copy the contents of `code/libraries` folder to the `libraries` directory of your Arduino sketchbook (you might have to make it). To install the board spec, copy the contents of `code/hardware` to the `hardware` directory of the sketchbook (you might thave to make that directory as well).
+You'll first want to install the software libraries- Ouroboros and its dependencies- as well as the hardware board specification. 
+
+ * To install the software libraries, simply copy the contents of `code/libraries` folder to the `libraries` directory of your Arduino sketchbook (you might have to make it). 
+ * To install the board spec, copy the contents of `code/hardware` to the `hardware` directory of the sketchbook (you might thave to make that directory as well).
+
+Check out the [advanced installation guide](code/install.md) for a method that doesn't require copying using symbolic links (Linux/OSX only).
+
 
 ##Getting Started
-There are plenty of ways to get started. Probably the first and best way is to make your own prototype on a breadboard, which is detailed inside the `boards/breadboard` folder. That way you can practice with the wiring and the code, as well as test what you'll need to add to the existing Ouroboros board in order to get it working with your project. 
+There are plenty of ways to get started. Probably the first and best way is to make your own prototype on a breadboard, which is detailed inside the `boards/breadboard` folder. That way you can practice with the wiring and the code, as well as test what you'll need to add to the existing Ouroboros board in order to get it working with your project.
+
+The `Blank_Example` sketch provides a bare-bones implementation of the Ouroboros functionality-
 
 ##License
 
