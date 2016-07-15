@@ -50,7 +50,7 @@ void apa_put_char(struct apa_port_type *port, char c, unsigned char *return_valu
    //
    // set start bit
    //
-   clear(*port->port_out, port->pin_out);
+   clear_pin(*port->port_out, port->pin_out);
    //
    // bit 0
    //
@@ -63,7 +63,7 @@ void apa_put_char(struct apa_port_type *port, char c, unsigned char *return_valu
          return;
       }
    if (((c >> 0) & 1) == 0)
-      clear(*port->port_out, port->pin_out);
+      clear_pin(*port->port_out, port->pin_out);
    else
       set(*port->port_out, port->pin_out);
    //
@@ -78,7 +78,7 @@ void apa_put_char(struct apa_port_type *port, char c, unsigned char *return_valu
          return;
       }
    if (((c >> 1) & 1) == 0)
-      clear(*port->port_out, port->pin_out);
+      clear_pin(*port->port_out, port->pin_out);
    else
       set(*port->port_out, port->pin_out);
    //
@@ -93,7 +93,7 @@ void apa_put_char(struct apa_port_type *port, char c, unsigned char *return_valu
          return;
       }
    if (((c >> 2) & 1) == 0)
-      clear(*port->port_out, port->pin_out);
+      clear_pin(*port->port_out, port->pin_out);
    else
       set(*port->port_out, port->pin_out);
    //
@@ -108,7 +108,7 @@ void apa_put_char(struct apa_port_type *port, char c, unsigned char *return_valu
          return;
       }
    if (((c >> 3) & 1) == 0)
-      clear(*port->port_out, port->pin_out);
+      clear_pin(*port->port_out, port->pin_out);
    else
       set(*port->port_out, port->pin_out);
    //
@@ -123,7 +123,7 @@ void apa_put_char(struct apa_port_type *port, char c, unsigned char *return_valu
          return;
       }
    if (((c >> 4) & 1) == 0)
-      clear(*port->port_out, port->pin_out);
+      clear_pin(*port->port_out, port->pin_out);
    else
       set(*port->port_out, port->pin_out);
    //
@@ -138,7 +138,7 @@ void apa_put_char(struct apa_port_type *port, char c, unsigned char *return_valu
          return;
       }
    if (((c >> 5) & 1) == 0)
-      clear(*port->port_out, port->pin_out);
+      clear_pin(*port->port_out, port->pin_out);
    else
       set(*port->port_out, port->pin_out);
    //
@@ -153,7 +153,7 @@ void apa_put_char(struct apa_port_type *port, char c, unsigned char *return_valu
          return;
       }
    if (((c >> 6) & 1) == 0)
-      clear(*port->port_out, port->pin_out);
+      clear_pin(*port->port_out, port->pin_out);
    else
       set(*port->port_out, port->pin_out);
    //
@@ -168,7 +168,7 @@ void apa_put_char(struct apa_port_type *port, char c, unsigned char *return_valu
          return;
       }
    if (((c >> 7) & 1) == 0)
-      clear(*port->port_out, port->pin_out);
+      clear_pin(*port->port_out, port->pin_out);
    else
       set(*port->port_out, port->pin_out);
    //
@@ -182,7 +182,7 @@ void apa_put_char(struct apa_port_type *port, char c, unsigned char *return_valu
       if (*return_value == 0)
          return;
       }
-   clear(*port->port_out, port->pin_out);
+   clear_pin(*port->port_out, port->pin_out);
    bit_read_delay();
    }
 
@@ -220,7 +220,7 @@ void apa_get_char(struct apa_port_type *port, char *c, unsigned char *return_val
    //
    // bit 0
    //
-   clear(*port->port_out, port->pin_out);
+   clear_pin(*port->port_out, port->pin_out);
    bit_read_delay();
    if (0 == pin_test(*port->pins_in, port->pin_in))
       *c |= (0 << 0);
@@ -238,7 +238,7 @@ void apa_get_char(struct apa_port_type *port, char *c, unsigned char *return_val
    //
    // bit 2
    //
-   clear(*port->port_out, port->pin_out);
+   clear_pin(*port->port_out, port->pin_out);
    bit_read_delay();
    if (0 == pin_test(*port->pins_in, port->pin_in))
       *c |= (0 << 2);
@@ -256,7 +256,7 @@ void apa_get_char(struct apa_port_type *port, char *c, unsigned char *return_val
    //
    // bit 4
    //
-   clear(*port->port_out, port->pin_out);
+   clear_pin(*port->port_out, port->pin_out);
    bit_read_delay();
    if (0 == pin_test(*port->pins_in, port->pin_in))
       *c |= (0 << 4);
@@ -274,7 +274,7 @@ void apa_get_char(struct apa_port_type *port, char *c, unsigned char *return_val
    //
    // bit 6
    //
-   clear(*port->port_out, port->pin_out);
+   clear_pin(*port->port_out, port->pin_out);
    bit_read_delay();
    if (0 == pin_test(*port->pins_in, port->pin_in))
       *c |= (0 << 6);
@@ -292,7 +292,7 @@ void apa_get_char(struct apa_port_type *port, char *c, unsigned char *return_val
    //
    // stop clock
    //
-   clear(*port->port_out, port->pin_out);
+   clear_pin(*port->port_out, port->pin_out);
    bit_read_delay();
    //
    // return
@@ -550,7 +550,14 @@ void apa_port_scan(struct apa_port_type *port) {
             apa_copy_packet(port,current_port);
             current_port = current_port->next_port;
             }
-         port->path_in_length = 0;
+         //
+         // and also process the packet here. 
+         //
+         if (port->path_out_length == 0) {
+            apa_move_packet(port,port);
+            apa_reverse_path(port);
+            apa_process_packet(port);
+            }
          }
       //
       // destination not here or flood, loop over other ports

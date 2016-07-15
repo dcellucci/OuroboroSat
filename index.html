@@ -1,0 +1,80 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>OuroboroSat by Daniel Cellucci</title>
+
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/github-light.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="wrapper">
+      <header style="text-align:right">
+        <img src="assets/ouroboros_logo.png" alt="OuroboroSat logo">
+        <h1 style="margin-bottom:0px">OuroboroSat</h1><p>A Modular Satellite Platform</p>
+
+        <p class="view"><a href="https://github.com/dcellucci/OuroboroSat">View the Project on GitHub <br/><small style="margin-top:1px;">dcellucci/OuroboroSat</small></a></p>
+
+
+        <ul>
+          <li><a href="https://github.com/dcellucci/OuroboroSat/zipball/master">Download <strong>ZIP File</strong></a></li>
+          <li><a href="https://github.com/dcellucci/OuroboroSat/tarball/master">Download <strong>TAR Ball</strong></a></li>
+          <li><a href="https://github.com/dcellucci/OuroboroSat">View On <strong>GitHub</strong></a></li>
+        </ul>
+      </header>
+      <section>
+<p>OuroboroSat is the modular satellite platform that combines communication, power-sharing, and the Arduino framework to create a scalable platform for orbital experiments. It's designed to be even smaller than a CubeSat (one sixth, to be exact).</p>
+
+<h3>
+<a id="what-does-it-do" class="anchor" href="#what-does-it-do" aria-hidden="true"><span class="octicon octicon-link"></span></a>What does it do?</h3>
+
+<p>An OuroboroSat board (v. 1.0) can do alot of things. </p>
+
+<ol>
+<li>It behaves like an Arduino, so it can run Arduino code and libraries</li>
+<li>It has the ability to charge an on-board LiPo battery from a solar panel</li>
+<li>It can connect to a maximum of four neighbors, and can talk to these four neighbors using a protocol called the Asynchronous Packet Automaton (which you can learn more about <a href="https://github.com/dcellucci/APA_Tutorial">here</a>).</li>
+<li>It can also use this connection to charge a neighbor's battery using its own on-board battery, for which there are plenty of reasons, detailed in a forthcoming paper. </li>
+</ol>
+
+<p>OuroboroSat is supposed to be alot like the Iron Man suit- it's the foundation upon which a more complex and specialized iterations can be built. My goal is to make the process of extending both the hardware and the software as easy and transparent as possible.</p>
+
+<h3>
+<a id="installation" class="anchor" href="#installation" aria-hidden="true"><span class="octicon octicon-link"></span></a>Installation</h3>
+
+<p>You'll first want to install the software libraries- Ouroboros and its dependencies- as well as the hardware board specification. </p>
+
+<ul>
+<li>To install the software libraries, simply copy the contents of <code>code/libraries</code> folder to the <code>libraries</code> directory of your Arduino sketchbook (you might have to make it). </li>
+<li>To install the board spec, copy the contents of <code>code/hardware</code> to the <code>hardware</code> directory of the sketchbook (you might thave to make that directory as well).</li>
+</ul>
+
+<p>Check out the <a href="code/install.md">advanced installation guide</a> if any of this is confusing, or if you want to see a method that doesn't require copying (it uses symbolic links and is Linux/OSX only at the moment).</p>
+
+<h3>
+<a id="getting-started" class="anchor" href="#getting-started" aria-hidden="true"><span class="octicon octicon-link"></span></a>Getting Started</h3>
+
+<p>There are plenty of ways to get started. Probably the first and best way is to make your own prototype on a breadboard, which is detailed inside the <code>boards/breadboard</code> folder. That way you can practice with the wiring and the code, as well as test what you'll need to add to the existing OuroboroSat board in order to get it working with your project.</p>
+
+<p>In addition, the <code>Blank_Example</code> sketch provides a bare-bones implementation of the OuroboroSat software.</p>
+
+<h3>
+<a id="license" class="anchor" href="#license" aria-hidden="true"><span class="octicon octicon-link"></span></a>License</h3>
+
+<p><a href="http://creativecommons.org/licenses/by-sa/4.0/"><img alt="Creative Commons License" src="https://i.creativecommons.org/l/by-sa/4.0/88x31.png"></a><br>All content (except the logo)- designs, text, and code- is licensed under a <a href="http://creativecommons.org/licenses/by-sa/4.0/">Creative Commons Attribution-ShareAlike 4.0 International License</a>.</p>
+      </section>
+      <footer style="text-align:right">
+        <p>This project is maintained by <a href="https://github.com/dcellucci">Daniel Cellucci</a>
+        Logo design by <a href="http://www.michelle-fong.com/">Michelle Fong</a></p>
+        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
+      </footer>
+    </div>
+    <script src="javascripts/scale.fix.js"></script>
+    
+  </body>
+</html>

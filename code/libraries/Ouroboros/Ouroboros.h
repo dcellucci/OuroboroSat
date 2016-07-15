@@ -79,7 +79,6 @@ class Ouroboros{
 		//indicates if it is time to start talking
 		boolean start_talking; 
 		boolean lipo_gauge_working;
-	private:
 		void clean_ports();
 
 };
